@@ -1,0 +1,21 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+.venv/
+venv/
+env/
+.env
+settings.json
+*.json.bak
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.egg-info/
+dist/
+build/
+
+# Card library (your cards)
+cards/
+error.log
