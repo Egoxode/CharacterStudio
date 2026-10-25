@@ -532,8 +532,6 @@ class MainWindow(QMainWindow):
         place = f"cards/{Path(card.path).name}" if card.path else "Not saved yet"
         self.info.setText(f"{card.format}  |  {place}")
 
-    # ---------- Open ----------
-
     # ---------- Library / import ----------
 
     def load_library(self):
@@ -580,7 +578,8 @@ class MainWindow(QMainWindow):
 
     def import_paths(self, paths):
         """Copy cards into the library (folders: every .json directly inside). The originals are not touched.
-        A card already in the library (same content, or a file from the library itself) is only selected."""
+        A card with the same content as an open one is only selected. A file from the library itself
+        is not copied: it is selected if open, otherwise opened where it is (as on start)."""
         files = []
         for p in paths:
             p = Path(p)
@@ -592,7 +591,9 @@ class MainWindow(QMainWindow):
         added, skipped, errors = [], [], []
         first_existing = None
         for f in files:
-            if is_inside(f, self.library):
+            # Only files directly in cards/ belong to the library (load_library opens just these).
+            in_library = f.resolve().parent == self.library.resolve()
+            if in_library:
                 existing = next((c for c in self.cards if c.path and Path(c.path).resolve() == f.resolve()), None)
                 if existing:
                     first_existing = first_existing or existing
@@ -605,17 +606,21 @@ class MainWindow(QMainWindow):
             if not is_card(raw):
                 skipped.append(f.name)
                 continue
-            existing = next((c for c in self.cards if c.path and c.raw == raw), None)
-            if existing:
-                first_existing = first_existing or existing
-                continue
-            try:
-                self.library.mkdir(parents=True, exist_ok=True)
-                target = import_copy(f, self.library, [c.path for c in self.cards if c.path])
-            except OSError as e:
-                errors.append(f"{f.name}: {e}")
-                continue
-            card = Card(raw, str(target), style=style)
+            if in_library:
+                # Put into cards/ after the start: open it where it is, a copy would be a duplicate.
+                card = Card(raw, str(f), style=style)
+            else:
+                existing = next((c for c in self.cards if c.path and c.raw == raw), None)
+                if existing:
+                    first_existing = first_existing or existing
+                    continue
+                try:
+                    self.library.mkdir(parents=True, exist_ok=True)
+                    target = import_copy(f, self.library, [c.path for c in self.cards if c.path])
+                except OSError as e:
+                    errors.append(f"{f.name}: {e}")
+                    continue
+                card = Card(raw, str(target), style=style)
             self.add_card(card)
             added.append(card)
 
@@ -631,7 +636,9 @@ class MainWindow(QMainWindow):
 
     def eventFilter(self, obj, event):
         kind = event.type()
-        if kind in (QEvent.Type.DragEnter, QEvent.Type.DragMove, QEvent.Type.Drop):
+        # Only widgets of this window (not the message boxes).
+        if kind in (QEvent.Type.DragEnter, QEvent.Type.DragMove, QEvent.Type.Drop) \
+                and isinstance(obj, QWidget) and obj.window() is self:
             mime = event.mimeData()
             paths = [u.toLocalFile() for u in mime.urls() if u.isLocalFile()] if mime and mime.hasUrls() else []
             if paths:
@@ -639,11 +646,12 @@ class MainWindow(QMainWindow):
                     # Open after the drop has finished: a message box inside the drop handler
                     # would block the file manager that started the drag (Windows).
                     QTimer.singleShot(0, lambda: self.import_paths(paths))
-                event.acceptProposedAction()
+                # Always "copied": with Shift the system proposes "move", and after that answer
+                # Windows Explorer may delete the original file. The program only reads it.
+                event.setDropAction(Qt.DropAction.CopyAction)
+                event.accept()
                 return True
         return super().eventFilter(obj, event)
-
-    # ---------- New / Close ----------
 
     # ---------- New / Delete ----------
 
@@ -744,7 +752,7 @@ class MainWindow(QMainWindow):
         path, _ = QFileDialog.getSaveFileName(self, "Export Character Card", start, "JSON (*.json)")
         if not path:
             return False
-        if not Path(path).suffix:
+        if Path(path).suffix.lower() != ".json":  # "my.card" -> "my.card.json"
             path += ".json"
         if is_inside(path, self.library):
             QMessageBox.warning(self, "Export", "Choose a folder outside the library (cards/).")
@@ -762,7 +770,7 @@ class MainWindow(QMainWindow):
         if not dirty:
             event.accept()
             return
-        names = "\n".join(c.values["name"] or "Unnamed" for c in dirty)
+        names = "\n".join(c.values["name"].strip() or "Unnamed" for c in dirty)
         r = QMessageBox.question(
             self, "Unsaved Changes", f"Save changes before closing?\n\n{names}",
             QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.Yes

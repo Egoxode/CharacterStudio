@@ -15,12 +15,6 @@ def _reject_constant(name):
     raise ValueError(f"{name} is not a valid JSON value")
 
 
-def load_json(path):
-    # utf-8-sig: корректно читает и обычные файлы, и файлы с BOM (Блокнот Windows и др.)
-    with open(path, "r", encoding="utf-8-sig") as f:
-        return json.load(f, parse_constant=_reject_constant)
-
-
 def read_json_file(path):
     """Load JSON and remember how the file is formatted, so it can be written back the same way."""
     with open(path, "rb") as f:

@@ -1,5 +1,22 @@
 # Changelog
 
+## 1.0.6
+
+### Fixed
+- A file dragged into the window with Shift (or Alt, Ctrl+Shift) was accepted as "moved", and Windows Explorer could then delete the original. A dropped file is now always accepted as "copied", as in Lorebook Studio and Lorebook Organizer.
+- A file dropped on a message box of the program was imported too. Now only drops on the main window are.
+- Export: a name with another extension (`my.card`) was saved without `.json`. Now `.json` is added (`my.card.json`).
+- A file put into `cards/` while the program was running was copied into the same folder a second time on import (`name (2).json`). Now it is opened where it is.
+- The question on closing showed an empty line for a card whose name is only spaces; now it shows "Unnamed", as elsewhere.
+
+### Changed
+- Removed unused code.
+
+## 1.0.5
+
+### Changed
+- Errors are written to `error.log` and shown in a message box however the program was started: before, only `CharacterStudio.pyw` did this, and with `python main.py` an error was only printed to the console, which may close at once. In the console the error is still printed too. The error handling is in `error_log.py`, used by both `main.py` and `CharacterStudio.pyw`.
+
 ## 1.0.4
 
 ### Added

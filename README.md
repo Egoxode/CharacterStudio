@@ -2,7 +2,7 @@
 
 Desktop editor for SillyTavern character cards in JSON format.
 
-Version **1.0.4** ([changelog](CHANGELOG.md))
+Version **1.0.6** ([changelog](CHANGELOG.md))
 
 Character Studio edits only the card fields you use most. Everything else in the file is kept exactly as it was. You can freely use, copy, and modify this program.
 
@@ -108,7 +108,7 @@ py main.py
 
 ### Run without a console window (Windows)
 
-Double-click `CharacterStudio.pyw`. The program opens without the black console window. If something goes wrong, the error is shown in a message box and written to `error.log` next to the program.
+Double-click `CharacterStudio.pyw`. The program opens without the black console window. If something goes wrong, the error is shown in a message box and written to `error.log` next to the program. The same happens when you start the program with `python main.py` (or double-click `main.py`): errors are written to `error.log` and shown in a message box, and also printed in the console.
 
 ## Keyboard shortcuts
 
@@ -141,6 +141,7 @@ Character Studio keeps its own copies of your cards in the `cards/` folder next 
 
 - **Import Files** (`Ctrl+O`), **Import Folder**, or drag and drop copy cards into the library. After that the program works only with the copy; the original file is never changed.
 - Importing a card that is already in the library (same content) just selects it. If the content is different, it is added as a new card with a number, for example `Alcina_Dimitrescu (2).json`.
+- A file put into `cards/` while the program is running is not copied again on import: it is opened where it is.
 - **New Card** (`Ctrl+N`) is saved into the library on the first Save; the file name comes from the character name. Renaming the character later does not rename the file.
 - **Save** (`Ctrl+S`) and **Save All** (`Ctrl+Shift+S`) write to the library without asking for a file name. A card cannot be saved without a name.
 - **Export** (`Ctrl+E`) writes a copy of the card, as shown in the editor (including unsaved edits), to any folder outside the library. The library card is not changed.
