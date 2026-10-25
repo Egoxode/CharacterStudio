@@ -2,7 +2,7 @@
 
 Desktop editor for SillyTavern character cards in JSON format.
 
-Version **1.0.6** ([changelog](CHANGELOG.md))
+Version **1.0.7** ([changelog](CHANGELOG.md))
 
 Character Studio edits only the card fields you use most. Everything else in the file is kept exactly as it was. You can freely use, copy, and modify this program.
 
